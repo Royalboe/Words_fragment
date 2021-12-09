@@ -1,13 +1,12 @@
-package com.example.wordsapp
+package com.example.wordsapp.letter
 
 import android.content.Context
 import android.os.Bundle
 import android.view.*
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
+import com.example.wordsapp.R
 import com.example.wordsapp.databinding.FragmentLetterListBinding
 
 
@@ -16,9 +15,9 @@ class LetterListFragment : Fragment() {
        private var _binding: FragmentLetterListBinding? = null
        private val binding get() = _binding!!
        private lateinit var recyclerView: RecyclerView
-       private var isLinearLayoutManager = true
        //  returns the Context this fragment is currently associated with, initialized to requireContext()
        private lateinit var contexts: Context
+       private val letterViewModel: LetterViewModel by viewModels()
 
 
        // Set the setHasOptionMenu to true to allow option menu
@@ -40,7 +39,8 @@ class LetterListFragment : Fragment() {
        // Bind the views contained in the inflated layout
        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
               recyclerView = binding.recyclerView
-              chooseLayout()
+              contexts = requireContext()
+              letterViewModel.chooseLayout(contexts, recyclerView)
        }
 
        // Sent the _binding property to  null to restore the value
@@ -55,40 +55,19 @@ class LetterListFragment : Fragment() {
               inflater.inflate(R.menu.layout_menu, menu)
 
               val layoutButton = menu.findItem(R.id.action_switch_layout)
-              setIcon(layoutButton)
+              letterViewModel.setIcon(contexts, layoutButton)
        }
 
 
-       private fun chooseLayout() {
-               contexts = requireContext()
-              when (isLinearLayoutManager) {
-                     true -> {
-                            recyclerView.layoutManager = LinearLayoutManager(contexts)
-                            recyclerView.adapter = LetterAdapter(contexts)
-                     }
-                     false -> {
-                            recyclerView.layoutManager = GridLayoutManager(contexts, 4)
-                            recyclerView.adapter = LetterAdapter(contexts)
-                     }
-              }
-       }
-       private fun setIcon(menuItem: MenuItem?) {
-              if (menuItem == null)
-                     return
-              menuItem.icon =
-                     if (isLinearLayoutManager)
-                            ContextCompat.getDrawable(contexts, R.drawable.ic_grid_layout)
-                     else ContextCompat.getDrawable(contexts, R.drawable.ic_linear_layout)
-       }
 
        override fun onOptionsItemSelected(item: MenuItem): Boolean {
               return when (item.itemId) {
                      R.id.action_switch_layout -> {
                             // Sets isLinearLayoutManager (a Boolean) to the opposite value
-                            isLinearLayoutManager = !isLinearLayoutManager
+                            letterViewModel.isLinearLayoutManager = !letterViewModel.isLinearLayoutManager
                             // Sets layout and icon
-                            chooseLayout()
-                            setIcon(item)
+                            letterViewModel.chooseLayout(contexts, recyclerView)
+                            letterViewModel.setIcon(contexts, item)
 
                             return true
                      }
